@@ -18,14 +18,22 @@ public class Author {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long authorId;
+    @JsonIgnore
+    private Long id;
+
+    @Column(nullable = false, unique = true)
+    @JsonView(View.Public.class)
+    private String name;
 
     @Column(nullable = false)
     @JsonView(View.Public.class)
-    private String authorName;
+    private String imgPath;
+
+    @Column(nullable = false)
+    @JsonView(View.Public.class)
+    private String description;
 
     @OneToMany(mappedBy = "author")
-    @JsonView(View.ExtendedPublic.class)
     @JsonIgnore
     private Set<Text> textList = new HashSet<>();
 
@@ -35,12 +43,37 @@ public class Author {
     private UserProfile userProfile;
 
     @OneToMany(mappedBy = "author")
+    @JsonView(View.Public.class)
     @JsonIgnore
     private Set<Story> stories = new HashSet<>();
 
-    public Author(UserProfile userProfile, String authorName) {
+    @ManyToMany(fetch = FetchType.LAZY,
+            cascade = {
+                    CascadeType.PERSIST,
+                    CascadeType.MERGE
+            },
+            mappedBy = "following")
+    @JsonView(View.Public.class)
+    @JsonIgnoreProperties("following")
+    private Set<Author> followers = new HashSet<>();
+
+    @ManyToMany(fetch = FetchType.LAZY,
+            cascade = {
+                    CascadeType.PERSIST,
+                    CascadeType.MERGE
+            })
+    @JoinTable(name = "followers_following",
+            joinColumns = {@JoinColumn(name = "follower_id")},
+            inverseJoinColumns = {@JoinColumn(name = "following_id")})
+    @JsonView(View.Public.class)
+    @JsonIgnoreProperties("followers")
+    private Set<Author> following = new HashSet<>();
+
+    public Author(UserProfile userProfile, String name, String imgPath, String description) {
         this.setUserProfile(userProfile);
-        this.authorName = authorName;
+        this.name = name;
+        this.description = description;
+        this.imgPath = imgPath;
     }
 
     public Author() {
@@ -59,12 +92,12 @@ public class Author {
         this.userProfile = userProfile;
     }
 
-    public Long getAuthorId() {
-        return authorId;
+    public Long getId() {
+        return id;
     }
 
-    public String getAuthorName() {
-        return authorName;
+    public String getName() {
+        return name;
     }
 
     public Set<Text> getTextList() {
@@ -73,5 +106,38 @@ public class Author {
 
     public void addStory(Story story) {
         this.stories.add(story);
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getImgPath() {
+        return imgPath;
+    }
+
+    public void setImgPath(String imgPath) {
+        this.imgPath = imgPath;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void addFollower(Author followerAuthor) {
+        this.followers.add(followerAuthor);
+        followerAuthor.following.add(this);
+    }
+
+    public Set<Author> getFollowers() {
+        return followers;
+    }
+
+    public Set<Author> getFollowing() {
+        return following;
     }
 }

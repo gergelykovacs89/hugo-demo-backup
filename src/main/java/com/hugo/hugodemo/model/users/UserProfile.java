@@ -17,13 +17,10 @@ public class UserProfile {
     @JsonView(View.Public.class)
     private Long userId;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     @JsonView(View.Public.class)
     private String email;
 
-    @Column(nullable = false)
-    @JsonView(View.Internal.class)
-    private String password;
 
     @Column(nullable = false)
     @JsonView(View.Public.class)
@@ -33,9 +30,8 @@ public class UserProfile {
     @JsonView(View.Public.class)
     private Set<Author> aliases;
 
-    public UserProfile(String email, String password, String fullName) {
+    public UserProfile(String email, String fullName) {
         this.email = email;
-        this.password = password;
         this.fullName = fullName;
         this.aliases = new HashSet<>();
     }
@@ -49,10 +45,6 @@ public class UserProfile {
 
     public String getEmail() {
         return email;
-    }
-
-    public String getPassword() {
-        return password;
     }
 
     public String getFullName() {

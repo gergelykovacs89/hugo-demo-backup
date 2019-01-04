@@ -22,6 +22,7 @@ public class TextNode {
     private Text text;
 
     @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "parent_node_id")
     @JsonIgnore
     private TextNode parent;
 

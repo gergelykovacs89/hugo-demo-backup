@@ -15,12 +15,13 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Set;
 
 @RestController
+@RequestMapping("/story")
 public class StoryREST {
 
-    final
+    private final
     StoryRepository storyRepository;
 
-    final
+    private final
     AuthorRepository authorRepository;
 
     @Autowired
@@ -30,10 +31,10 @@ public class StoryREST {
     }
 
     @CrossOrigin(origins = "http://0.0.0.0:4200")
-    @GetMapping("story/{id}")
+    @GetMapping("{storyId}")
     @JsonView(View.Public.class)
-    public ResponseEntity getStoryById(@PathVariable("id") long id) {
-        Story story = storyRepository.getOne(id);
+    public ResponseEntity getStoryById(@PathVariable("storyId") long storyId) {
+        Story story = storyRepository.getOne(storyId);
         if (story != null) {
             return new ResponseEntity<>(story, HttpStatus.OK);
         } else {
@@ -43,10 +44,10 @@ public class StoryREST {
     }
 
     @CrossOrigin(origins = "http://0.0.0.0:4200")
-    @GetMapping("stories/{author_id}")
+    @GetMapping("author/{author_id}")
     @JsonView(View.Public.class)
     public ResponseEntity getStoriesByAuthor(@PathVariable("author_id") long authorId) {
-        Set<Story> storiesByAuthor = storyRepository.getAllByAuthorAuthorId(authorId);
+        Set<Story> storiesByAuthor = storyRepository.getAllByAuthorId(authorId);
         if (storiesByAuthor != null) {
             return new ResponseEntity<>(storiesByAuthor, HttpStatus.OK);
         } else {
@@ -54,7 +55,7 @@ public class StoryREST {
         }
     }
 
-    @PostMapping("story/new")
+    @PostMapping("new")
     public ResponseEntity addStory(@RequestBody Story story,
                                    @RequestParam("authorId") long authorId) {
         Author author = authorRepository.getOne(authorId);

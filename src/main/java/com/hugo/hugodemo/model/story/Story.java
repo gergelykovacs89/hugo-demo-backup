@@ -52,7 +52,7 @@ public class Story {
         return author;
     }
 
-    private StoryTree getStoryTree() {
+    public StoryTree getStoryTree() {
         return storyTree;
     }
 

@@ -20,6 +20,7 @@ public class StoryTree {
     private Story story;
 
     @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "root_node_id")
     @JsonView(View.Public.class)
     private TextNode rootTextNode;
 
@@ -30,7 +31,6 @@ public class StoryTree {
         this.story = story;
         story.setStoryTree(this);
     }
-
 
     public Long getStoryTreeId() {
         return storyTreeId;

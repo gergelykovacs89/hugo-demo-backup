@@ -1,9 +1,9 @@
 package com.hugo.hugodemo.api;
 
-import com.fasterxml.jackson.annotation.JsonView;
+import com.hugo.hugodemo.model.users.Author;
 import com.hugo.hugodemo.model.users.UserProfile;
+import com.hugo.hugodemo.repository.AuthorRepository;
 import com.hugo.hugodemo.repository.UserProfileRepository;
-import com.hugo.hugodemo.util.View;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,33 +11,28 @@ import org.springframework.web.bind.annotation.*;
 
 
 @RestController
+@RequestMapping("/profile")
 public class UserProfileREST {
 
-    final
-    UserProfileRepository userProfileRepository;
+    @Autowired
+    private UserProfileRepository userProfileRepository;
 
     @Autowired
-    public UserProfileREST(UserProfileRepository userProfileRepository) {
-        this.userProfileRepository = userProfileRepository;
-    }
-
-    @CrossOrigin(origins = "http://0.0.0.0:4200")
-    @GetMapping("profile/{id}")
-    @JsonView(View.Public.class)
-    public ResponseEntity getUserProfile(@PathVariable("id") long id) {
-        UserProfile userProfile = userProfileRepository.getOne(id);
-        if (userProfile != null) {
-            return new ResponseEntity<>(userProfile, HttpStatus.OK);
-        } else {
-            return new ResponseEntity(HttpStatus.NOT_FOUND);
-        }
-    }
+    private AuthorRepository authorRepository;
 
 
-    @PostMapping("profile/new")
+    @CrossOrigin(origins = "http://localhost:4200")
+    @PostMapping("new")
     public ResponseEntity addUserProfile(@RequestBody UserProfile userProfile) {
-        userProfileRepository.save(new UserProfile(userProfile.getEmail(), userProfile.getPassword(), userProfile.getFullName()));
-        return new ResponseEntity(HttpStatus.OK);
+        if (userProfileRepository.getByEmail(userProfile.getEmail()) == null) {
+            userProfileRepository.save(new UserProfile(userProfile.getEmail(), userProfile.getFullName()));
+            return new ResponseEntity<>(HttpStatus.OK);
+        } else {
+            System.out.println("User already exists!");
+            UserProfile user = userProfileRepository.getByEmail(userProfile.getEmail());
+            Author[] authors = authorRepository.getAuthorsByUserProfileUserId(user.getUserId());
+            return new ResponseEntity<>(authors, HttpStatus.OK);
+        }
     }
 
 }

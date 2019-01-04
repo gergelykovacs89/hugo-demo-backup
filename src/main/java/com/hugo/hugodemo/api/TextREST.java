@@ -1,6 +1,8 @@
 package com.hugo.hugodemo.api;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import com.hugo.hugodemo.api.JSONModels.ChildText;
+import com.hugo.hugodemo.api.JSONModels.RootText;
 import com.hugo.hugodemo.model.story.Story;
 import com.hugo.hugodemo.model.story.textunit.Text;
 import com.hugo.hugodemo.model.tree.TextNode;
@@ -15,15 +17,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequestMapping("/text")
 public class TextREST {
 
-    final
+    private final
     TextNodeRepository textNodeRepository;
 
-    final
+    private final
     AuthorRepository authorRepository;
 
-    final
+    private final
     StoryRepository storyRepository;
 
     @Autowired
@@ -34,7 +37,7 @@ public class TextREST {
     }
 
     @CrossOrigin(origins = "http://0.0.0.0:4200")
-    @GetMapping("story/text/{textNodeId}")
+    @GetMapping("{textNodeId}")
     @JsonView(View.Public.class)
     public ResponseEntity getTextByNodeId(@PathVariable("textNodeId") long textNodeId) {
         TextNode textNode = textNodeRepository.getOne(textNodeId);
@@ -47,7 +50,7 @@ public class TextREST {
     }
 
     @CrossOrigin(origins = "http://0.0.0.0:4200")
-    @GetMapping("story/text/{author_id}")
+    @GetMapping("author/{author_id}")
     @JsonView(View.Public.class)
     public ResponseEntity getTextsByAuthor(@PathVariable("author_id") long authorId) {
         Author author = authorRepository.getOne(authorId);
@@ -58,31 +61,25 @@ public class TextREST {
         }
     }
 
-    @PostMapping("story/text/new-child")
-    public ResponseEntity addChildText(@RequestBody Text text,
-                                       @RequestParam("parentNodeId") long parentNodeId,
-                                       @RequestParam("authorId") long authorId) {
-        Author author = authorRepository.getOne(authorId);
-        TextNode parentNode = textNodeRepository.getOne(parentNodeId);
-        Text childText = new Text(text.getTextett(), author);
-        TextNode childNode = new TextNode(childText);
+    @PostMapping("story/new-child")
+    public ResponseEntity addChildText(@RequestBody ChildText childText) {
+        Author author = authorRepository.getOne(childText.getAuthorId());
+        TextNode parentNode = textNodeRepository.getOne(childText.getParentNodeId());
+        Text childTextToDB = new Text(childText.getText(), author);
+        TextNode childNode = new TextNode(childTextToDB);
         parentNode.addChild(childNode);
         textNodeRepository.save(parentNode);
         return new ResponseEntity(HttpStatus.OK);
     }
 
-    @PostMapping("story/text/new-root")
-    public ResponseEntity addRootText(@RequestBody Text text,
-                                      @RequestParam("storyId") long storyId,
-                                      @RequestParam("authorId") long authorId) {
-        Author author = authorRepository.getOne(authorId);
-        Story story = storyRepository.getOne(storyId);
-        Text rootText = new Text(text.getTextett(), author);
-        TextNode rootNode = new TextNode(rootText);
+    @PostMapping("story/new-root")
+    public ResponseEntity addRootText(@RequestBody RootText rootText) {
+        Author author = authorRepository.getOne(rootText.getAuthorId());
+        Story story = storyRepository.getOne(rootText.getStoryId());
+        Text rootTextToDB = new Text(rootText.getText(), author);
+        TextNode rootNode = new TextNode(rootTextToDB);
         story.setRootTextNode(rootNode);
         textNodeRepository.save(rootNode);
         return new ResponseEntity(HttpStatus.OK);
     }
-
-
 }
